@@ -9,10 +9,11 @@ Familiarisation avec python:
     - listes
     - packages (optional) 
 
-## Module 2
+## Module2
 
 Jeu de la vie (Conway)
 
 ## Module 3
 
 Voiture autonome avec Deep Q Learning (Reinforcement learning)
+ 
