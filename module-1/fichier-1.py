@@ -67,3 +67,9 @@ h = b % 2  # h = 1
 % -> divise sans les nombres à virgules et garde le surplus
 """
 
+
+
+
+
+
+
