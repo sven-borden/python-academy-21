@@ -32,7 +32,7 @@ def fa(x):
 fa(2)
 fa(1)
 x = [9, 4, 0, 5, 3]
-
+second = x[1]
 print(len(x))
 
 x.append(6)
