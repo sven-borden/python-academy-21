@@ -28,7 +28,7 @@ last_reward = 0
 last_action = 0
 last_distance = 0
 last_orientation = 0
-last_nb_steps = 1e5
+last_nb_steps = 1
 cum_rewards = 0
 scores = []
 steps_memory = []
@@ -120,35 +120,18 @@ class Game(Widget):
             if distance < last_distance:
                 last_reward = 0.1 # driving towards objective reward
 
-        # score based also on orientation
-        #  last_reward += (1-abs(orientation)) * 0.9
-        # if abs(last_orientation) < abs(orientation):
-        #     last_reward -= 0.2
-        # elif abs(last_orientation) == abs(orientation):
-        #     last_reward += 0.
-        # else:
-        #     last_reward += 0.2
-        # Score also based on sequence change
-        # global last_action
-        # if list_actions[last_action][0] == list_actions[action][0]:
-        #     last_reward += 0.02
-        # else:
-        #     self.seq_change += 1
-
-        # last_action = action
-
         if self.robot.x < 10:
             self.robot.x = 10
-            last_reward = -50  # too close to edges of the wall reward
+            last_reward = -10  # too close to edges of the wall reward
         if self.robot.x > self.width - 10:
             self.robot.x = self.width - 10
-            last_reward = -50
+            last_reward = -10
         if self.robot.y < 10:
             self.robot.y = 10
-            last_reward = -50
+            last_reward = -10
         if self.robot.y > self.height - 10:
             self.robot.y = self.height - 10
-            last_reward = -50
+            last_reward = -10
 
         if distance < 50:
             global goal_reached_nb

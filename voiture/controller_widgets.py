@@ -30,7 +30,11 @@ class Robot(Widget):
         return 0.
 
     def move(self, displacement, sand, width, height):
-        self.pos = Vector(displacement[0], displacement[1]).rotate(self.angle) + self.pos
+
+        if Vector(*self.velocity).length() < 1.:
+            self.pos = Vector(displacement[0]/100, displacement[1]/100).rotate(self.angle) + self.pos
+        else:
+            self.pos = Vector(displacement[0], displacement[1]).rotate(self.angle) + self.pos
         self.rotation = displacement[2]
 
         self.angle += self.rotation
