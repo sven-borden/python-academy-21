@@ -1,6 +1,6 @@
 i = 0
 
-while :
+while True:
     print(i)
     i = i + 1
 

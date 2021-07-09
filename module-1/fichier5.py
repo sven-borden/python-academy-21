@@ -9,7 +9,7 @@ def liste(x, b):
 c = liste([1,2,3,4,5],2)
 
 
-print(f'{c}')
+print(c)
 
 
 
