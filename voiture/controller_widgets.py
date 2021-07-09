@@ -31,13 +31,10 @@ class Robot(Widget):
 
     def move(self, displacement, sand, width, height):
 
-        if Vector(*self.velocity).length() < 1.:
-            self.pos = Vector(displacement[0]/100, displacement[1]/100).rotate(self.angle) + self.pos
-        else:
-            self.pos = Vector(displacement[0], displacement[1]).rotate(self.angle) + self.pos
-        self.rotation = displacement[2]
+        # Update self.pos
+        # Update rotation
+        # Update angle
 
-        self.angle += self.rotation
 
         self.sensor1 = Vector(30, 0).rotate(self.angle) + self.pos
         self.sensor2 = Vector(30, 0).rotate((self.angle+30) % 360) + self.pos
