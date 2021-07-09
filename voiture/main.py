@@ -8,6 +8,7 @@ from kivy.app import App
 from kivy.clock import Clock
 from kivy.config import Config
 from kivy.core.window import Window
+from kivy.graphics import Color, Line
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
@@ -40,6 +41,8 @@ def init():
     global goal_y
     global first_update
     global scorelabel
+    global sand
+    sand = np.zeros((width, height))
     goal_x = 150
     goal_y = height - 150
     first_update = False
@@ -47,8 +50,8 @@ def init():
 
 list_actions = [
     [6, 0, 0],
-    [6, 0, 10],
-    [6, 0, -10]
+    [6, 0, 20],
+    [6, 0, -20]
 ]
 print(f'Number of actions : {len(list_actions)}')
 model = Dqn(5, len(list_actions), 0.9)
@@ -99,7 +102,7 @@ class Game(Widget):
         action = model.update(last_reward, last_signal)
         scores.append(model.score())
         displacement = list_actions[action]
-        self.robot.move(displacement, width, height)
+        self.robot.move(displacement, sand, width, height)
         distance = np.sqrt((self.robot.x - goal_x)**2 + (self.robot.y - goal_y)**2)
         self.signal1.pos = self.robot.sensor1
         self.signal2.pos = self.robot.sensor2
@@ -108,17 +111,23 @@ class Game(Widget):
 
         self.steps += 1
 
-        self.robot.velocity = Vector(1, 0).rotate(self.robot.angle)
-        last_reward = (last_distance - distance) / 6
+        if sand[int(self.robot.x),int(self.robot.y)] > 0:
+            self.robot.velocity = Vector(0.1, 0).rotate(self.robot.angle)
+            last_reward = -5 # sand reward
+        else: # otherwise
+            self.robot.velocity = Vector(1, 0).rotate(self.robot.angle)
+            last_reward = -0.1 # driving away from objective reward
+            if distance < last_distance:
+                last_reward = 0.1 # driving towards objective reward
 
         # score based also on orientation
         #  last_reward += (1-abs(orientation)) * 0.9
-        if abs(last_orientation) < abs(orientation):
-            last_reward -= 0.2
-        elif abs(last_orientation) == abs(orientation):
-            last_reward += 0.
-        else:
-            last_reward += 0.2
+        # if abs(last_orientation) < abs(orientation):
+        #     last_reward -= 0.2
+        # elif abs(last_orientation) == abs(orientation):
+        #     last_reward += 0.
+        # else:
+        #     last_reward += 0.2
         # Score also based on sequence change
         # global last_action
         # if list_actions[last_action][0] == list_actions[action][0]:
@@ -187,16 +196,45 @@ class Game(Widget):
         )
 
 
+class SandPaintWidget(Widget):
+    def on_touch_down(self, touch):
+        global length, n_points, last_x, last_y
+        with self.canvas:
+            Color(0.8, 0.7, 0)
+            touch.ud['line'] = Line(points=(touch.x, touch.y), width=10)
+            last_x = int(touch.x)
+            last_y = int(touch.y)
+            n_points = 0
+            length = 0
+            sand[int(touch.x), int(touch.y)] = 1
+    def on_touch_move(self, touch):
+        global length, n_points, last_x, last_y
+        if touch.button == 'left':
+            touch.ud['line'].points += [touch.x, touch.y]
+            x = int(touch.x)
+            y = int(touch.y)
+            length += np.sqrt(max((x - last_x)**2 + (y - last_y)**2, 2))
+            n_points += 1.
+            density = n_points/(length)
+            touch.ud['line'].width = int(20 * density + 1)
+            sand[int(touch.x) - 10:int(touch.x) + 10, int(touch.y) - 10:int(touch.y) + 10] = 1
+            last_x = x
+            last_y = y
+
+
 class RobotApp(App):
 
     def build(self):
         parent = Game()
         parent.serve_robot()
         Clock.schedule_interval(parent.update, 1.0/120.0)
+        self.painter = SandPaintWidget()
         savebtn = Button(text='save', pos=(0, 0))
         loadbtn = Button(text='load', pos=(parent.width, 0))
+        clearbtn = Button(text='clear', pos=(parent.width*2, 0))
         savebtn.bind(on_release=self.save)
         loadbtn.bind(on_release=self.load)
+        clearbtn.bind(on_release=self.clear_canvas)
 
         global scorelabel
         scorelabel = Label(
@@ -207,6 +245,8 @@ class RobotApp(App):
         )
         scorelabel.bind(size=scorelabel.setter('text_size'))
         parent.add_widget(scorelabel)
+        parent.add_widget(self.painter)
+        parent.add_widget(clearbtn)
         parent.add_widget(savebtn)
         parent.add_widget(loadbtn)
         return parent
@@ -216,6 +256,11 @@ class RobotApp(App):
         print("Saved model")
         plt.plot(scores)
         plt.show()
+
+    def clear_canvas(self, obj):
+        global sand
+        self.painter.canvas.clear()
+        sand = np.zeros((width, height))
 
     def load(self, obj):
         model.load()

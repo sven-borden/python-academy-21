@@ -1,7 +1,7 @@
 from kivy.properties import NumericProperty, ReferenceListProperty
 from kivy.uix.widget import Widget
 from kivy.vector import Vector
-
+import numpy as np
 
 class Robot(Widget):
     angle = NumericProperty(0)
@@ -29,7 +29,7 @@ class Robot(Widget):
             return 1.
         return 0.
 
-    def move(self, displacement, width, height):
+    def move(self, displacement, sand, width, height):
         self.pos = Vector(displacement[0], displacement[1]).rotate(self.angle) + self.pos
         self.rotation = displacement[2]
 
@@ -38,6 +38,10 @@ class Robot(Widget):
         self.sensor1 = Vector(30, 0).rotate(self.angle) + self.pos
         self.sensor2 = Vector(30, 0).rotate((self.angle+30) % 360) + self.pos
         self.sensor3 = Vector(30, 0).rotate((self.angle-30) % 360) + self.pos
+
+        self.signal1 = int(np.sum(sand[int(self.sensor1_x)-10:int(self.sensor1_x)+10, int(self.sensor1_y)-10:int(self.sensor1_y)+10]))/400.
+        self.signal2 = int(np.sum(sand[int(self.sensor2_x)-10:int(self.sensor2_x)+10, int(self.sensor2_y)-10:int(self.sensor2_y)+10]))/400.
+        self.signal3 = int(np.sum(sand[int(self.sensor3_x)-10:int(self.sensor3_x)+10, int(self.sensor3_y)-10:int(self.sensor3_y)+10]))/400.
 
         self.signal1 = self.sensor_value(self.sensor1_x, self.sensor1_y, width, height)
         self.signal2 = self.sensor_value(self.sensor2_x, self.sensor2_y, width, height)
